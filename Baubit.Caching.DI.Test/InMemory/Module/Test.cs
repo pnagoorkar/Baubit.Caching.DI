@@ -2,7 +2,6 @@
 using Baubit.DI.Extensions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 
 namespace Baubit.Caching.DI.Test.InMemory.Module
 {
@@ -11,104 +10,96 @@ namespace Baubit.Caching.DI.Test.InMemory.Module
     /// </summary>
     public class Test
     {
-        private static IServiceProvider BuildServiceProvider(Action<DI.InMemory.Configuration> configureAction)
-        {
-            var componentResult = ComponentBuilder.CreateNew()
-                                                  .WithModule<DI.InMemory.Module<string>, DI.InMemory.Configuration>(configureAction);
-            Assert.True(componentResult.IsSuccess);
-
-            var buildResult = componentResult.Value.Build();
-            Assert.True(buildResult.IsSuccess);
-
-            var services = new ServiceCollection();
-            services.AddLogging();
-            foreach (var m in buildResult.Value)
-            {
-                m.Load(services);
-            }
-
-            return services.BuildServiceProvider();
-        }
-
         [Fact]
         public void Load_WithSingletonLifetime_RegistersCache()
         {
-            var serviceProvider = BuildServiceProvider(config =>
-            {
-                config.CacheLifetime = ServiceLifetime.Singleton;
-            });
+            var result = ComponentBuilder.CreateNew()
+                                         .WithModule<Logging.Module, Logging.Configuration>((Logging.Configuration _) => { })
+                                         .WithModule<DI.InMemory.Module<string>, DI.InMemory.Configuration>(config =>
+                                         {
+                                             config.CacheLifetime = ServiceLifetime.Singleton;
+                                         })
+                                         .Build<IOrderedCache<string>>();
 
-            var cache = serviceProvider.GetService<IOrderedCache<string>>();
-
-            Assert.NotNull(cache);
+            Assert.True(result.IsSuccess);
+            Assert.NotNull(result.Value);
         }
 
         [Fact]
         public void Load_WithTransientLifetime_RegistersCache()
         {
-            var serviceProvider = BuildServiceProvider(config =>
-            {
-                config.CacheLifetime = ServiceLifetime.Transient;
-            });
+            var result = ComponentBuilder.CreateNew()
+                                         .WithModule<Logging.Module, Logging.Configuration>((Logging.Configuration _) => { })
+                                         .WithModule<DI.InMemory.Module<string>, DI.InMemory.Configuration>(config =>
+                                         {
+                                             config.CacheLifetime = ServiceLifetime.Transient;
+                                         })
+                                         .Build<IOrderedCache<string>>();
 
-            var cache = serviceProvider.GetService<IOrderedCache<string>>();
-
-            Assert.NotNull(cache);
+            Assert.True(result.IsSuccess);
+            Assert.NotNull(result.Value);
         }
 
         [Fact]
         public void Load_WithScopedLifetime_RegistersCache()
         {
-            var serviceProvider = BuildServiceProvider(config =>
-            {
-                config.CacheLifetime = ServiceLifetime.Scoped;
-            });
+            var result = ComponentBuilder.CreateNew()
+                                         .WithModule<Logging.Module, Logging.Configuration>((Logging.Configuration _) => { })
+                                         .WithModule<DI.InMemory.Module<string>, DI.InMemory.Configuration>(config =>
+                                         {
+                                             config.CacheLifetime = ServiceLifetime.Scoped;
+                                         })
+                                         .Build<IOrderedCache<string>>();
 
-            using var scope = serviceProvider.CreateScope();
-            var cache = scope.ServiceProvider.GetService<IOrderedCache<string>>();
-
-            Assert.NotNull(cache);
+            Assert.True(result.IsSuccess);
+            Assert.NotNull(result.Value);
         }
 
         [Fact]
         public void Load_WithL1CachingEnabled_RegistersCacheWithL1Store()
         {
-            var serviceProvider = BuildServiceProvider(config =>
-            {
-                config.IncludeL1Caching = true;
-                config.L1MinCap = 64;
-                config.L1MaxCap = 1024;
-            });
+            var result = ComponentBuilder.CreateNew()
+                                         .WithModule<Logging.Module, Logging.Configuration>((Logging.Configuration _) => { })
+                                         .WithModule<DI.InMemory.Module<string>, DI.InMemory.Configuration>(config =>
+                                         {
+                                             config.IncludeL1Caching = true;
+                                             config.L1MinCap = 64;
+                                             config.L1MaxCap = 1024;
+                                         })
+                                         .Build<IOrderedCache<string>>();
 
-            var cache = serviceProvider.GetService<IOrderedCache<string>>();
-
-            Assert.NotNull(cache);
+            Assert.True(result.IsSuccess);
+            Assert.NotNull(result.Value);
         }
 
         [Fact]
         public void Load_WithL1CachingDisabled_RegistersCacheWithoutL1Store()
         {
-            var serviceProvider = BuildServiceProvider(config =>
-            {
-                config.IncludeL1Caching = false;
-            });
+            var result = ComponentBuilder.CreateNew()
+                                         .WithModule<Logging.Module, Logging.Configuration>((Logging.Configuration _) => { })
+                                         .WithModule<DI.InMemory.Module<string>, DI.InMemory.Configuration>(config =>
+                                         {
+                                             config.IncludeL1Caching = false;
+                                         })
+                                         .Build<IOrderedCache<string>>();
 
-            var cache = serviceProvider.GetService<IOrderedCache<string>>();
-
-            Assert.NotNull(cache);
+            Assert.True(result.IsSuccess);
+            Assert.NotNull(result.Value);
         }
 
         [Fact]
         public void Load_WithCacheConfiguration_RegistersCacheWithConfiguration()
         {
-            var serviceProvider = BuildServiceProvider(config =>
-            {
-                config.CacheConfiguration = new Baubit.Caching.Configuration();
-            });
+            var result = ComponentBuilder.CreateNew()
+                                         .WithModule<Logging.Module, Logging.Configuration>((Logging.Configuration _) => { })
+                                         .WithModule<DI.InMemory.Module<string>, DI.InMemory.Configuration>(config =>
+                                         {
+                                             config.CacheConfiguration = new Baubit.Caching.Configuration();
+                                         })
+                                         .Build<IOrderedCache<string>>();
 
-            var cache = serviceProvider.GetService<IOrderedCache<string>>();
-
-            Assert.NotNull(cache);
+            Assert.True(result.IsSuccess);
+            Assert.NotNull(result.Value);
         }
 
         [Fact]
@@ -147,13 +138,20 @@ namespace Baubit.Caching.DI.Test.InMemory.Module
 
             Assert.NotNull(module);
 
-            var services = new ServiceCollection();
-            services.AddLogging();
-            module.Load(services);
-            var serviceProvider = services.BuildServiceProvider();
-            var cache = serviceProvider.GetService<IOrderedCache<string>>();
+            // Test that the module loads correctly with the same config values
+            var result = ComponentBuilder.CreateNew()
+                                         .WithModule<Logging.Module, Logging.Configuration>((Logging.Configuration _) => { })
+                                         .WithModule<DI.InMemory.Module<string>, DI.InMemory.Configuration>(config =>
+                                         {
+                                             config.IncludeL1Caching = true;
+                                             config.L1MinCap = 64;
+                                             config.L1MaxCap = 1024;
+                                             config.CacheLifetime = ServiceLifetime.Singleton;
+                                         })
+                                         .Build<IOrderedCache<string>>();
 
-            Assert.NotNull(cache);
+            Assert.True(result.IsSuccess);
+            Assert.NotNull(result.Value);
         }
     }
 }

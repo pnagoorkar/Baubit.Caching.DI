@@ -17,30 +17,66 @@ dotnet add package Baubit.Caching.DI
 
 ## Quick Start
 
+### Pattern 1: Modules from appsettings.json
+
+Load modules from configuration. Module types and settings are defined in JSON.
+
 ```csharp
-using Baubit.DI;
-using Baubit.DI.Extensions;
-using Baubit.Caching.DI.InMemory;
-using Microsoft.Extensions.DependencyInjection;
+await Host.CreateApplicationBuilder()
+          .UseConfiguredServiceProviderFactory()
+          .Build()
+          .RunAsync();
+```
 
-// Register an in-memory ordered cache
-var componentResult = ComponentBuilder.CreateNew()
-    .WithModule<Module<string>, Configuration>(config =>
-    {
-        config.CacheLifetime = ServiceLifetime.Singleton;
-    });
-
-// Load into service collection
-var services = new ServiceCollection();
-services.AddLogging();
-foreach (var module in componentResult.Value.Build().Value)
+**appsettings.json:**
+```json
 {
-    module.Load(services);
+  "modules": [
+    {
+      "type": "Baubit.Caching.DI.InMemory.Module`1[[System.String]], Baubit.Caching.DI",
+      "configuration": {
+        "includeL1Caching": true,
+        "l1MinCap": 128,
+        "l1MaxCap": 8192,
+        "cacheLifetime": "Singleton"
+      }
+    }
+  ]
+}
+```
+
+### Pattern 2: Modules from Code (IComponent)
+
+Load modules programmatically using `IComponent`.
+
+```csharp
+public class CachingComponent : AComponent
+{
+    protected override Result<ComponentBuilder> Build(ComponentBuilder builder)
+    {
+        return builder.WithModule<Module<string>, Configuration>(config =>
+        {
+            config.IncludeL1Caching = true;
+            config.CacheLifetime = ServiceLifetime.Singleton;
+        });
+    }
 }
 
-// Resolve and use
-var provider = services.BuildServiceProvider();
-var cache = provider.GetRequiredService<IOrderedCache<string>>();
+await Host.CreateEmptyApplicationBuilder(new HostApplicationBuilderSettings())
+          .UseConfiguredServiceProviderFactory(componentsFactory: () => [new CachingComponent()])
+          .Build()
+          .RunAsync();
+```
+
+### Pattern 3: Hybrid Loading
+
+Combine configuration-based and code-based module loading.
+
+```csharp
+await Host.CreateApplicationBuilder()
+          .UseConfiguredServiceProviderFactory(componentsFactory: () => [new CachingComponent()])
+          .Build()
+          .RunAsync();
 ```
 
 ## Features
