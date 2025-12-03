@@ -1,0 +1,31 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <AssemblyVersion>$(AssemblyVersion)</AssemblyVersion>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+    <PreserveCompilationContext>true</PreserveCompilationContext>
+    <Deterministic>true</Deterministic>
+    <RepositoryUrl>https://github.com/pnagoorkar/Baubit.Caching.DI</RepositoryUrl>
+    <Authors>Prashant Nagoorkar</Authors>
+    <SignAssembly>$(SignAssembly)</SignAssembly>
+    <AssemblyOriginatorKeyFile>$(KeyFilePath)</AssemblyOriginatorKeyFile>
+    <EmitCompilerGeneratedFiles>false</EmitCompilerGeneratedFiles>
+    <Description>DI support for Baubit.Caching</Description>
+    <PackageTags>dependency-injection;di;modules;configuration;ioc;inversion-of-control;service-collection;caching;netstandard;baubit</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="../README.md" Pack="true" PackagePath="." />
+    <None Include="../LICENSE" Pack="true" PackagePath="." />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Baubit.Caching" Version="2025.49.1" />
+    <PackageReference Include="Baubit.DI.Extensions" Version="2025.49.2" />
+  </ItemGroup>
+
+</Project>
