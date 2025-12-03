@@ -3,7 +3,6 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <NoWarn>$(NoWarn);CS1591</NoWarn>
     <AssemblyVersion>$(AssemblyVersion)</AssemblyVersion>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
@@ -26,7 +25,7 @@
 
   <ItemGroup>
     <PackageReference Include="Baubit.Caching" Version="2025.49.1" />
-    <PackageReference Include="Baubit.DI.Extensions" Version="2025.49.1" />
+    <PackageReference Include="Baubit.DI.Extensions" Version="2025.49.2" />
   </ItemGroup>
 
 </Project>
