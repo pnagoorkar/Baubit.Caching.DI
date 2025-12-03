@@ -9,8 +9,6 @@
 
 Dependency injection modules for [Baubit.Caching](https://github.com/pnagoorkar/Baubit.Caching). Registers `IOrderedCache<TValue>` in your DI container with configurable L1/L2 caching and service lifetimes.
 
-> **Note:** `IOrderedCache<TValue>` requires `ILoggerFactory`. All examples below include a LoggingModule to satisfy this dependency.
-
 ## Installation
 
 ```bash
@@ -33,11 +31,6 @@ await Host.CreateApplicationBuilder()
 **appsettings.json:**
 ```json
 {
-  "modules": [
-    {
-      "type": "MyApp.LoggingModule, MyApp",
-      "configuration": { }
-    },
     {
       "type": "Baubit.Caching.DI.InMemory.Module`1[[System.String]], Baubit.Caching.DI",
       "configuration": {
@@ -45,6 +38,11 @@ await Host.CreateApplicationBuilder()
         "l1MinCap": 128,
         "l1MaxCap": 8192,
         "cacheLifetime": "Singleton"
+        "modules": [
+        {
+            "type": "MyApp.LoggingModule, MyApp", // Register ILoggerFactory for OrderedCache<T>
+            "configuration": { }
+        }
       }
     }
   ]
@@ -60,13 +58,17 @@ public class AppComponent : AComponent
 {
     protected override Result<ComponentBuilder> Build(ComponentBuilder builder)
     {
-        return builder
-            .WithModule<LoggingModule, LoggingConfiguration>(config => { })
-            .WithModule<Module<string>, Configuration>(config =>
-            {
-                config.IncludeL1Caching = true;
-                config.CacheLifetime = ServiceLifetime.Singleton;
-            });
+        return builder.WithModule<LoggingModule, LoggingConfiguration>(ConfigureLogging) // Register ILoggerFactory for OrderedCache<T>
+                      .WithModule<Module<string>, Configuration>(ConfigureCaching);
+    }
+    private void ConfigureLogging(LoggingConfiguration config) 
+    {
+        // configure as needed
+    }
+    private void ConfigureCaching(LoggingConfiguration config) 
+    {
+        config.IncludeL1Caching = true;
+        config.CacheLifetime = ServiceLifetime.Singleton;
     }
 }
 
