@@ -9,6 +9,8 @@
 
 Dependency injection modules for [Baubit.Caching](https://github.com/pnagoorkar/Baubit.Caching). Registers `IOrderedCache<TValue>` in your DI container with configurable L1/L2 caching and service lifetimes.
 
+> **Note:** `IOrderedCache<TValue>` requires `ILoggerFactory`. All examples below include a LoggingModule to satisfy this dependency.
+
 ## Installation
 
 ```bash
@@ -33,6 +35,10 @@ await Host.CreateApplicationBuilder()
 {
   "modules": [
     {
+      "type": "MyApp.LoggingModule, MyApp",
+      "configuration": { }
+    },
+    {
       "type": "Baubit.Caching.DI.InMemory.Module`1[[System.String]], Baubit.Caching.DI",
       "configuration": {
         "includeL1Caching": true,
@@ -50,20 +56,22 @@ await Host.CreateApplicationBuilder()
 Load modules programmatically using `IComponent`.
 
 ```csharp
-public class CachingComponent : AComponent
+public class AppComponent : AComponent
 {
     protected override Result<ComponentBuilder> Build(ComponentBuilder builder)
     {
-        return builder.WithModule<Module<string>, Configuration>(config =>
-        {
-            config.IncludeL1Caching = true;
-            config.CacheLifetime = ServiceLifetime.Singleton;
-        });
+        return builder
+            .WithModule<LoggingModule, LoggingConfiguration>(config => { })
+            .WithModule<Module<string>, Configuration>(config =>
+            {
+                config.IncludeL1Caching = true;
+                config.CacheLifetime = ServiceLifetime.Singleton;
+            });
     }
 }
 
 await Host.CreateEmptyApplicationBuilder(new HostApplicationBuilderSettings())
-          .UseConfiguredServiceProviderFactory(componentsFactory: () => [new CachingComponent()])
+          .UseConfiguredServiceProviderFactory(componentsFactory: () => [new AppComponent()])
           .Build()
           .RunAsync();
 ```
@@ -74,7 +82,7 @@ Combine configuration-based and code-based module loading.
 
 ```csharp
 await Host.CreateApplicationBuilder()
-          .UseConfiguredServiceProviderFactory(componentsFactory: () => [new CachingComponent()])
+          .UseConfiguredServiceProviderFactory(componentsFactory: () => [new AppComponent()])
           .Build()
           .RunAsync();
 ```

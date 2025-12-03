@@ -11,7 +11,7 @@ namespace Baubit.Caching.DI.Test.InMemory.Module
     public class Test
     {
         [Fact]
-        public void Load_WithSingletonLifetime_RegistersCache()
+        public void Load_WithSingletonLifetime_RegistersCacheAsSingleton()
         {
             var result = ComponentBuilder.CreateNew()
                                          .WithModule<Logging.Module, Logging.Configuration>((Logging.Configuration _) => { })
@@ -19,14 +19,21 @@ namespace Baubit.Caching.DI.Test.InMemory.Module
                                          {
                                              config.CacheLifetime = ServiceLifetime.Singleton;
                                          })
-                                         .Build<IOrderedCache<string>>();
+                                         .BuildServiceProvider();
 
             Assert.True(result.IsSuccess);
-            Assert.NotNull(result.Value);
+            var serviceProvider = result.Value;
+
+            var cache1 = serviceProvider.GetService<IOrderedCache<string>>();
+            var cache2 = serviceProvider.GetService<IOrderedCache<string>>();
+
+            Assert.NotNull(cache1);
+            Assert.NotNull(cache2);
+            Assert.Same(cache1, cache2); // Singleton returns same instance
         }
 
         [Fact]
-        public void Load_WithTransientLifetime_RegistersCache()
+        public void Load_WithTransientLifetime_RegistersCacheAsTransient()
         {
             var result = ComponentBuilder.CreateNew()
                                          .WithModule<Logging.Module, Logging.Configuration>((Logging.Configuration _) => { })
@@ -34,14 +41,21 @@ namespace Baubit.Caching.DI.Test.InMemory.Module
                                          {
                                              config.CacheLifetime = ServiceLifetime.Transient;
                                          })
-                                         .Build<IOrderedCache<string>>();
+                                         .BuildServiceProvider();
 
             Assert.True(result.IsSuccess);
-            Assert.NotNull(result.Value);
+            var serviceProvider = result.Value;
+
+            var cache1 = serviceProvider.GetService<IOrderedCache<string>>();
+            var cache2 = serviceProvider.GetService<IOrderedCache<string>>();
+
+            Assert.NotNull(cache1);
+            Assert.NotNull(cache2);
+            Assert.NotSame(cache1, cache2); // Transient returns different instances
         }
 
         [Fact]
-        public void Load_WithScopedLifetime_RegistersCache()
+        public void Load_WithScopedLifetime_RegistersCacheAsScoped()
         {
             var result = ComponentBuilder.CreateNew()
                                          .WithModule<Logging.Module, Logging.Configuration>((Logging.Configuration _) => { })
@@ -49,10 +63,23 @@ namespace Baubit.Caching.DI.Test.InMemory.Module
                                          {
                                              config.CacheLifetime = ServiceLifetime.Scoped;
                                          })
-                                         .Build<IOrderedCache<string>>();
+                                         .BuildServiceProvider();
 
             Assert.True(result.IsSuccess);
-            Assert.NotNull(result.Value);
+            var serviceProvider = result.Value;
+
+            using var scope1 = serviceProvider.CreateScope();
+            using var scope2 = serviceProvider.CreateScope();
+
+            var cache1InScope1 = scope1.ServiceProvider.GetService<IOrderedCache<string>>();
+            var cache2InScope1 = scope1.ServiceProvider.GetService<IOrderedCache<string>>();
+            var cache1InScope2 = scope2.ServiceProvider.GetService<IOrderedCache<string>>();
+
+            Assert.NotNull(cache1InScope1);
+            Assert.NotNull(cache2InScope1);
+            Assert.NotNull(cache1InScope2);
+            Assert.Same(cache1InScope1, cache2InScope1); // Same scope returns same instance
+            Assert.NotSame(cache1InScope1, cache1InScope2); // Different scopes return different instances
         }
 
         [Fact]
@@ -66,10 +93,11 @@ namespace Baubit.Caching.DI.Test.InMemory.Module
                                              config.L1MinCap = 64;
                                              config.L1MaxCap = 1024;
                                          })
-                                         .Build<IOrderedCache<string>>();
+                                         .BuildServiceProvider();
 
             Assert.True(result.IsSuccess);
-            Assert.NotNull(result.Value);
+            var cache = result.Value.GetService<IOrderedCache<string>>();
+            Assert.NotNull(cache);
         }
 
         [Fact]
@@ -81,10 +109,11 @@ namespace Baubit.Caching.DI.Test.InMemory.Module
                                          {
                                              config.IncludeL1Caching = false;
                                          })
-                                         .Build<IOrderedCache<string>>();
+                                         .BuildServiceProvider();
 
             Assert.True(result.IsSuccess);
-            Assert.NotNull(result.Value);
+            var cache = result.Value.GetService<IOrderedCache<string>>();
+            Assert.NotNull(cache);
         }
 
         [Fact]
@@ -96,10 +125,11 @@ namespace Baubit.Caching.DI.Test.InMemory.Module
                                          {
                                              config.CacheConfiguration = new Baubit.Caching.Configuration();
                                          })
-                                         .Build<IOrderedCache<string>>();
+                                         .BuildServiceProvider();
 
             Assert.True(result.IsSuccess);
-            Assert.NotNull(result.Value);
+            var cache = result.Value.GetService<IOrderedCache<string>>();
+            Assert.NotNull(cache);
         }
 
         [Fact]
@@ -148,10 +178,11 @@ namespace Baubit.Caching.DI.Test.InMemory.Module
                                              config.L1MaxCap = 1024;
                                              config.CacheLifetime = ServiceLifetime.Singleton;
                                          })
-                                         .Build<IOrderedCache<string>>();
+                                         .BuildServiceProvider();
 
             Assert.True(result.IsSuccess);
-            Assert.NotNull(result.Value);
+            var cache = result.Value.GetService<IOrderedCache<string>>();
+            Assert.NotNull(cache);
         }
     }
 }
