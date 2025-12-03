@@ -37,7 +37,7 @@ await Host.CreateApplicationBuilder()
         "includeL1Caching": true,
         "l1MinCap": 128,
         "l1MaxCap": 8192,
-        "cacheLifetime": "Singleton"
+        "cacheLifetime": "Singleton",
         "modules": [
         {
             "type": "MyApp.LoggingModule, MyApp", // Register ILoggerFactory for OrderedCache<T>
