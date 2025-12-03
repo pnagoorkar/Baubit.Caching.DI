@@ -31,21 +31,19 @@ await Host.CreateApplicationBuilder()
 **appsettings.json:**
 ```json
 {
-    {
-      "type": "Baubit.Caching.DI.InMemory.Module`1[[System.String]], Baubit.Caching.DI",
-      "configuration": {
-        "includeL1Caching": true,
-        "l1MinCap": 128,
-        "l1MaxCap": 8192,
-        "cacheLifetime": "Singleton",
-        "modules": [
-        {
-            "type": "MyApp.LoggingModule, MyApp", // Register ILoggerFactory for OrderedCache<T>
-            "configuration": { }
-        }
+  "type": "Baubit.Caching.DI.InMemory.Module`1[[System.String]], Baubit.Caching.DI",
+  "configuration": {
+    "includeL1Caching": true,
+    "l1MinCap": 128,
+    "l1MaxCap": 8192,
+    "cacheLifetime": "Singleton",
+    "modules": [
+      {
+        "type": "MyApp.LoggingModule, MyApp", // Register ILoggerFactory for OrderedCache<T>
+        "configuration": {}
       }
-    }
-  ]
+    ]
+  }
 }
 ```
 

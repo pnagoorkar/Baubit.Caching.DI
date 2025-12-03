@@ -4,7 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
 
-namespace Baubit.Caching.DI.Test.Logging
+namespace Baubit.Caching.DI.Test.InMemory.Module.Setup.Logging
 {
     /// <summary>
     /// Module that registers <see cref="ILoggerFactory"/> for dependency injection.
