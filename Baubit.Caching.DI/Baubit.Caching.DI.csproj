@@ -14,8 +14,8 @@
     <SignAssembly>$(SignAssembly)</SignAssembly>
     <AssemblyOriginatorKeyFile>$(KeyFilePath)</AssemblyOriginatorKeyFile>
     <EmitCompilerGeneratedFiles>false</EmitCompilerGeneratedFiles>
-    <Description>TBD</Description>
-    <PackageTags>TBD</PackageTags>
+    <Description>DI support for Baubit.Caching</Description>
+    <PackageTags>dependency-injection;di;modules;configuration;ioc;inversion-of-control;service-collection;caching;netstandard;baubit</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>
