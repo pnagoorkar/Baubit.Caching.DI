@@ -37,6 +37,7 @@ await Host.CreateApplicationBuilder()
     "l1MinCap": 128,
     "l1MaxCap": 8192,
     "cacheLifetime": "Singleton",
+    "registrationKey": "my-cache",
     "modules": [
       {
         "type": "MyApp.LoggingModule, MyApp", // Register ILoggerFactory for OrderedCache<T>
@@ -87,10 +88,39 @@ await Host.CreateApplicationBuilder()
           .RunAsync();
 ```
 
+## Keyed Service Registration
+
+It is also possible to register multiple cache instances (of the same type) with different keys.
+
+```csharp
+public class AppComponent : AComponent
+{
+    protected override Result<ComponentBuilder> Build(ComponentBuilder builder)
+    {
+        return builder.WithModule<LoggingModule, LoggingConfiguration>(ConfigureLogging)
+                      .WithModule<Module<string>, Configuration>(config =>
+                      {
+                          config.RegistrationKey = "user-cache";
+                          config.CacheLifetime = ServiceLifetime.Singleton;
+                      })
+                      .WithModule<Module<string>, Configuration>(config =>
+                      {
+                          config.RegistrationKey = "product-cache";
+                          config.CacheLifetime = ServiceLifetime.Singleton;
+                      });
+    }
+}
+
+// Resolve keyed services
+var userCache = serviceProvider.GetKeyedService<IOrderedCache<string>>("user-cache");
+var productCache = serviceProvider.GetKeyedService<IOrderedCache<string>>("product-cache");
+```
+
 ## Features
 
 - **L1/L2 Caching**: Optional bounded L1 (fast lookup) layer with unbounded L2 storage
 - **Configurable Lifetimes**: Singleton, Transient, or Scoped registration
+- **Keyed Service Registration**: Register caches with a key for multi-instance scenarios
 - **IConfiguration Support**: Load settings from appsettings.json or other configuration sources
 
 ## Configuration
@@ -102,6 +132,7 @@ await Host.CreateApplicationBuilder()
 | `L1MaxCap` | `int` | `8192` | Maximum capacity for L1 store |
 | `CacheConfiguration` | `Configuration` | `null` | Underlying cache configuration |
 | `CacheLifetime` | `ServiceLifetime` | `Singleton` | DI service lifetime |
+| `RegistrationKey` | `string` | `null` | Key for keyed service registration |
 
 ## API Reference
 
