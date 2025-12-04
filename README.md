@@ -88,9 +88,9 @@ await Host.CreateApplicationBuilder()
           .RunAsync();
 ```
 
-### Pattern 4: Keyed Service Registration
+## Keyed Service Registration
 
-Register multiple cache instances with different keys.
+It is also possible to register multiple cache instances (of the same type) with different keys.
 
 ```csharp
 public class AppComponent : AComponent
