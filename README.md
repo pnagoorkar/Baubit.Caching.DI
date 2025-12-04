@@ -100,20 +100,20 @@ public class AppComponent : AComponent
         return builder.WithModule<LoggingModule, LoggingConfiguration>(ConfigureLogging)
                       .WithModule<Module<string>, Configuration>(config =>
                       {
-                          config.RegistrationKey = "cache-a";
+                          config.RegistrationKey = "user-cache";
                           config.CacheLifetime = ServiceLifetime.Singleton;
                       })
                       .WithModule<Module<string>, Configuration>(config =>
                       {
-                          config.RegistrationKey = "cache-b";
+                          config.RegistrationKey = "product-cache";
                           config.CacheLifetime = ServiceLifetime.Singleton;
                       });
     }
 }
 
 // Resolve keyed services
-var cacheA = serviceProvider.GetKeyedService<IOrderedCache<string>>("cache-a");
-var cacheB = serviceProvider.GetKeyedService<IOrderedCache<string>>("cache-b");
+var userCache = serviceProvider.GetKeyedService<IOrderedCache<string>>("user-cache");
+var productCache = serviceProvider.GetKeyedService<IOrderedCache<string>>("product-cache");
 ```
 
 ## Features

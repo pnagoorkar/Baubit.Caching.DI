@@ -188,7 +188,7 @@ namespace Baubit.Caching.DI.Test.InMemory.Module
         [Fact]
         public void Load_WithSingletonLifetimeAndRegistrationKey_RegistersKeyedCacheAsSingleton()
         {
-            const string registrationKey = "test-cache";
+            const string registrationKey = "singleton-test-cache";
             var result = ComponentBuilder.CreateNew()
                                          .WithModule<Setup.Logging.Module, Setup.Logging.Configuration>((Setup.Logging.Configuration _) => { })
                                          .WithModule<DI.InMemory.Module<string>, DI.InMemory.Configuration>(config =>
@@ -212,7 +212,7 @@ namespace Baubit.Caching.DI.Test.InMemory.Module
         [Fact]
         public void Load_WithTransientLifetimeAndRegistrationKey_RegistersKeyedCacheAsTransient()
         {
-            const string registrationKey = "test-cache";
+            const string registrationKey = "transient-test-cache";
             var result = ComponentBuilder.CreateNew()
                                          .WithModule<Setup.Logging.Module, Setup.Logging.Configuration>((Setup.Logging.Configuration _) => { })
                                          .WithModule<DI.InMemory.Module<string>, DI.InMemory.Configuration>(config =>
@@ -236,7 +236,7 @@ namespace Baubit.Caching.DI.Test.InMemory.Module
         [Fact]
         public void Load_WithScopedLifetimeAndRegistrationKey_RegistersKeyedCacheAsScoped()
         {
-            const string registrationKey = "test-cache";
+            const string registrationKey = "scoped-test-cache";
             var result = ComponentBuilder.CreateNew()
                                          .WithModule<Setup.Logging.Module, Setup.Logging.Configuration>((Setup.Logging.Configuration _) => { })
                                          .WithModule<DI.InMemory.Module<string>, DI.InMemory.Configuration>(config =>
