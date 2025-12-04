@@ -44,13 +44,34 @@ namespace Baubit.Caching.DI
             switch (Configuration.CacheLifetime)
             {
                 case ServiceLifetime.Singleton:
-                    services.AddSingleton(BuildOrderedCache);
+                    if (string.IsNullOrEmpty(Configuration.RegistrationKey))
+                    {
+                        services.AddSingleton(BuildOrderedCache);
+                    }
+                    else
+                    {
+                        services.AddKeyedSingleton(serviceKey: Configuration.RegistrationKey, (serviceProvider, _) => BuildOrderedCache(serviceProvider));
+                    }
                     break;
                 case ServiceLifetime.Transient:
-                    services.AddTransient(BuildOrderedCache);
+                    if (string.IsNullOrEmpty(Configuration.RegistrationKey))
+                    {
+                        services.AddTransient(BuildOrderedCache);
+                    }
+                    else
+                    {
+                        services.AddKeyedTransient(serviceKey: Configuration.RegistrationKey, (serviceProvider, _) => BuildOrderedCache(serviceProvider));
+                    }
                     break;
                 case ServiceLifetime.Scoped:
-                    services.AddScoped(BuildOrderedCache);
+                    if (string.IsNullOrEmpty(Configuration.RegistrationKey))
+                    {
+                        services.AddScoped(BuildOrderedCache);
+                    }
+                    else
+                    {
+                        services.AddKeyedScoped(serviceKey: Configuration.RegistrationKey, (serviceProvider, _) => BuildOrderedCache(serviceProvider));
+                    }
                     break;
                 default: throw new NotImplementedException();
             }

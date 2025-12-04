@@ -39,5 +39,7 @@ namespace Baubit.Caching.DI
         /// Defaults to <see cref="ServiceLifetime.Singleton"/>.
         /// </summary>
         public ServiceLifetime CacheLifetime { get; set; } = ServiceLifetime.Singleton;
+
+        public string RegistrationKey { get; set; } = null;
     }
 }
