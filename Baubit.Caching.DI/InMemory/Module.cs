@@ -41,7 +41,7 @@ namespace Baubit.Caching.DI.InMemory
         /// <returns>A bounded <see cref="Store{TValue}"/> configured with L1 capacity settings.</returns>
         protected override IStore<TValue> BuildL1DataStore(IServiceProvider serviceProvider)
         {
-            return new Store<TValue>(Configuration.L1MinCap, Configuration.L1MaxCap, serviceProvider.GetRequiredService<ILoggerFactory>());
+            return new Caching.InMemory.Store<TValue>(Configuration.L1MinCap, Configuration.L1MaxCap, serviceProvider.GetRequiredService<ILoggerFactory>());
         }
 
         /// <summary>
@@ -51,7 +51,7 @@ namespace Baubit.Caching.DI.InMemory
         /// <returns>An unbounded <see cref="Store{TValue}"/>.</returns>
         protected override IStore<TValue> BuildL2DataStore(IServiceProvider serviceProvider)
         {
-            return new Store<TValue>(serviceProvider.GetRequiredService<ILoggerFactory>());
+            return new Caching.InMemory.Store<TValue>(serviceProvider.GetRequiredService<ILoggerFactory>());
         }
 
         /// <summary>
