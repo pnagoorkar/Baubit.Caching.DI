@@ -4,7 +4,7 @@
     /// Configuration for the in-memory caching module.
     /// Uses <see cref="Baubit.Caching.InMemory.Store{TValue}"/> for both L1 and L2 data stores.
     /// </summary>
-    public class Configuration : AConfiguration
+    public class Configuration : DI.Configuration
     {
     }
 }

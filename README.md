@@ -54,18 +54,22 @@ await Host.CreateApplicationBuilder()
 Load modules programmatically using `IComponent`.
 
 ```csharp
-public class AppComponent : AComponent
+public class AppComponent : Component
 {
     protected override Result<ComponentBuilder> Build(ComponentBuilder builder)
     {
-        return builder.WithModule<LoggingModule, LoggingConfiguration>(ConfigureLogging) // Register ILoggerFactory for OrderedCache<T>
-                      .WithModule<Module<string>, Configuration>(ConfigureCaching);
+        return builder.WithModule<LoggingModule, LoggingConfiguration>(
+                          ConfigureLogging, 
+                          config => new LoggingModule(config)) // Register ILoggerFactory for OrderedCache<T>
+                      .WithModule<Module<string>, Configuration>(
+                          ConfigureCaching, 
+                          config => new Module<string>(config));
     }
     private void ConfigureLogging(LoggingConfiguration config) 
     {
         // configure as needed
     }
-    private void ConfigureCaching(LoggingConfiguration config) 
+    private void ConfigureCaching(Configuration config) 
     {
         config.IncludeL1Caching = true;
         config.CacheLifetime = ServiceLifetime.Singleton;
@@ -94,21 +98,23 @@ await Host.CreateApplicationBuilder()
 It is also possible to register multiple cache instances (of the same type) with different keys.
 
 ```csharp
-public class AppComponent : AComponent
+public class AppComponent : Component
 {
     protected override Result<ComponentBuilder> Build(ComponentBuilder builder)
     {
-        return builder.WithModule<LoggingModule, LoggingConfiguration>(ConfigureLogging)
+        return builder.WithModule<LoggingModule, LoggingConfiguration>(
+                          ConfigureLogging, 
+                          config => new LoggingModule(config))
                       .WithModule<Module<string>, Configuration>(config =>
                       {
                           config.RegistrationKey = "user-cache";
                           config.CacheLifetime = ServiceLifetime.Singleton;
-                      })
+                      }, config => new Module<string>(config))
                       .WithModule<Module<string>, Configuration>(config =>
                       {
                           config.RegistrationKey = "product-cache";
                           config.CacheLifetime = ServiceLifetime.Singleton;
-                      });
+                      }, config => new Module<string>(config));
     }
 }
 
@@ -137,11 +143,11 @@ var productCache = serviceProvider.GetKeyedService<IOrderedCache<string>>("produ
 
 ## API Reference
 
-### `AConfiguration`
+### `Configuration`
 
 Abstract base configuration class for caching modules.
 
-### `AModule<TValue, TConfiguration>`
+### `Module<TValue, TConfiguration>`
 
 Abstract base module for registering `IOrderedCache<TValue>`. Implement `BuildL1DataStore`, `BuildL2DataStore`, and `BuildMetadata` to customize cache construction.
 

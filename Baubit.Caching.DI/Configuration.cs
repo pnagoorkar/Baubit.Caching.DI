@@ -6,7 +6,7 @@ namespace Baubit.Caching.DI
     /// Abstract base configuration for caching modules.
     /// Provides common settings for L1 caching and service lifetime.
     /// </summary>
-    public abstract class AConfiguration : Baubit.DI.AConfiguration
+    public abstract class Configuration : Baubit.DI.Configuration
     {
         /// <summary>
         /// Gets or sets whether to include L1 (in-memory) caching layer.
@@ -32,7 +32,7 @@ namespace Baubit.Caching.DI
         /// <summary>
         /// Gets or sets the underlying <see cref="Baubit.Caching.Configuration"/> for the ordered cache.
         /// </summary>
-        public Configuration CacheConfiguration { get; set; }
+        public Baubit.Caching.Configuration CacheConfiguration { get; set; }
 
         /// <summary>
         /// Gets or sets the service lifetime for the registered <see cref="IOrderedCache{TValue}"/>.

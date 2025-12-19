@@ -14,11 +14,11 @@ namespace Baubit.Caching.DI.Test.InMemory.Module
         public void Load_WithSingletonLifetime_RegistersCacheAsSingleton()
         {
             var result = ComponentBuilder.CreateNew()
-                                         .WithModule<Setup.Logging.Module, Setup.Logging.Configuration>((Setup.Logging.Configuration _) => { })
+                                         .WithModule<Setup.Logging.Module, Setup.Logging.Configuration>((Setup.Logging.Configuration _) => { }, config => new Setup.Logging.Module(config))
                                          .WithModule<DI.InMemory.Module<string>, DI.InMemory.Configuration>(config =>
                                          {
                                              config.CacheLifetime = ServiceLifetime.Singleton;
-                                         })
+                                         }, config => new DI.InMemory.Module<string>(config))
                                          .BuildServiceProvider();
 
             Assert.True(result.IsSuccess);
@@ -36,11 +36,11 @@ namespace Baubit.Caching.DI.Test.InMemory.Module
         public void Load_WithTransientLifetime_RegistersCacheAsTransient()
         {
             var result = ComponentBuilder.CreateNew()
-                                         .WithModule<Setup.Logging.Module, Setup.Logging.Configuration>((Setup.Logging.Configuration _) => { })
+                                         .WithModule<Setup.Logging.Module, Setup.Logging.Configuration>((Setup.Logging.Configuration _) => { }, config => new Setup.Logging.Module(config))
                                          .WithModule<DI.InMemory.Module<string>, DI.InMemory.Configuration>(config =>
                                          {
                                              config.CacheLifetime = ServiceLifetime.Transient;
-                                         })
+                                         }, config => new DI.InMemory.Module<string>(config))
                                          .BuildServiceProvider();
 
             Assert.True(result.IsSuccess);
@@ -58,11 +58,11 @@ namespace Baubit.Caching.DI.Test.InMemory.Module
         public void Load_WithScopedLifetime_RegistersCacheAsScoped()
         {
             var result = ComponentBuilder.CreateNew()
-                                         .WithModule<Setup.Logging.Module, Setup.Logging.Configuration>((Setup.Logging.Configuration _) => { })
+                                         .WithModule<Setup.Logging.Module, Setup.Logging.Configuration>((Setup.Logging.Configuration _) => { }, config => new Setup.Logging.Module(config))
                                          .WithModule<DI.InMemory.Module<string>, DI.InMemory.Configuration>(config =>
                                          {
                                              config.CacheLifetime = ServiceLifetime.Scoped;
-                                         })
+                                         }, config => new DI.InMemory.Module<string>(config))
                                          .BuildServiceProvider();
 
             Assert.True(result.IsSuccess);
@@ -86,13 +86,13 @@ namespace Baubit.Caching.DI.Test.InMemory.Module
         public void Load_WithL1CachingEnabled_RegistersCacheWithL1Store()
         {
             var result = ComponentBuilder.CreateNew()
-                                         .WithModule<Setup.Logging.Module, Setup.Logging.Configuration>((Setup.Logging.Configuration _) => { })
+                                         .WithModule<Setup.Logging.Module, Setup.Logging.Configuration>((Setup.Logging.Configuration _) => { }, config => new Setup.Logging.Module(config))
                                          .WithModule<DI.InMemory.Module<string>, DI.InMemory.Configuration>(config =>
                                          {
                                              config.IncludeL1Caching = true;
                                              config.L1MinCap = 64;
                                              config.L1MaxCap = 1024;
-                                         })
+                                         }, config => new DI.InMemory.Module<string>(config))
                                          .BuildServiceProvider();
 
             Assert.True(result.IsSuccess);
@@ -104,11 +104,11 @@ namespace Baubit.Caching.DI.Test.InMemory.Module
         public void Load_WithL1CachingDisabled_RegistersCacheWithoutL1Store()
         {
             var result = ComponentBuilder.CreateNew()
-                                         .WithModule<Setup.Logging.Module, Setup.Logging.Configuration>((Setup.Logging.Configuration _) => { })
+                                         .WithModule<Setup.Logging.Module, Setup.Logging.Configuration>((Setup.Logging.Configuration _) => { }, config => new Setup.Logging.Module(config))
                                          .WithModule<DI.InMemory.Module<string>, DI.InMemory.Configuration>(config =>
                                          {
                                              config.IncludeL1Caching = false;
-                                         })
+                                         }, config => new DI.InMemory.Module<string>(config))
                                          .BuildServiceProvider();
 
             Assert.True(result.IsSuccess);
@@ -120,11 +120,11 @@ namespace Baubit.Caching.DI.Test.InMemory.Module
         public void Load_WithCacheConfiguration_RegistersCacheWithConfiguration()
         {
             var result = ComponentBuilder.CreateNew()
-                                         .WithModule<Setup.Logging.Module, Setup.Logging.Configuration>((Setup.Logging.Configuration _) => { })
+                                         .WithModule<Setup.Logging.Module, Setup.Logging.Configuration>((Setup.Logging.Configuration _) => { }, config => new Setup.Logging.Module(config))
                                          .WithModule<DI.InMemory.Module<string>, DI.InMemory.Configuration>(config =>
                                          {
                                              config.CacheConfiguration = new Baubit.Caching.Configuration();
-                                         })
+                                         }, config => new DI.InMemory.Module<string>(config))
                                          .BuildServiceProvider();
 
             Assert.True(result.IsSuccess);
@@ -170,14 +170,14 @@ namespace Baubit.Caching.DI.Test.InMemory.Module
 
             // Test that the module loads correctly with the same config values
             var result = ComponentBuilder.CreateNew()
-                                         .WithModule<Setup.Logging.Module, Setup.Logging.Configuration>((Setup.Logging.Configuration _) => { })
+                                         .WithModule<Setup.Logging.Module, Setup.Logging.Configuration>((Setup.Logging.Configuration _) => { }, config => new Setup.Logging.Module(config))
                                          .WithModule<DI.InMemory.Module<string>, DI.InMemory.Configuration>(config =>
                                          {
                                              config.IncludeL1Caching = true;
                                              config.L1MinCap = 64;
                                              config.L1MaxCap = 1024;
                                              config.CacheLifetime = ServiceLifetime.Singleton;
-                                         })
+                                         }, config => new DI.InMemory.Module<string>(config))
                                          .BuildServiceProvider();
 
             Assert.True(result.IsSuccess);
@@ -190,12 +190,12 @@ namespace Baubit.Caching.DI.Test.InMemory.Module
         {
             const string registrationKey = "singleton-test-cache";
             var result = ComponentBuilder.CreateNew()
-                                         .WithModule<Setup.Logging.Module, Setup.Logging.Configuration>((Setup.Logging.Configuration _) => { })
+                                         .WithModule<Setup.Logging.Module, Setup.Logging.Configuration>((Setup.Logging.Configuration _) => { }, config => new Setup.Logging.Module(config))
                                          .WithModule<DI.InMemory.Module<string>, DI.InMemory.Configuration>(config =>
                                          {
                                              config.CacheLifetime = ServiceLifetime.Singleton;
                                              config.RegistrationKey = registrationKey;
-                                         })
+                                         }, config => new DI.InMemory.Module<string>(config))
                                          .BuildServiceProvider();
 
             Assert.True(result.IsSuccess);
@@ -214,12 +214,12 @@ namespace Baubit.Caching.DI.Test.InMemory.Module
         {
             const string registrationKey = "transient-test-cache";
             var result = ComponentBuilder.CreateNew()
-                                         .WithModule<Setup.Logging.Module, Setup.Logging.Configuration>((Setup.Logging.Configuration _) => { })
+                                         .WithModule<Setup.Logging.Module, Setup.Logging.Configuration>((Setup.Logging.Configuration _) => { }, config => new Setup.Logging.Module(config))
                                          .WithModule<DI.InMemory.Module<string>, DI.InMemory.Configuration>(config =>
                                          {
                                              config.CacheLifetime = ServiceLifetime.Transient;
                                              config.RegistrationKey = registrationKey;
-                                         })
+                                         }, config => new DI.InMemory.Module<string>(config))
                                          .BuildServiceProvider();
 
             Assert.True(result.IsSuccess);
@@ -238,12 +238,12 @@ namespace Baubit.Caching.DI.Test.InMemory.Module
         {
             const string registrationKey = "scoped-test-cache";
             var result = ComponentBuilder.CreateNew()
-                                         .WithModule<Setup.Logging.Module, Setup.Logging.Configuration>((Setup.Logging.Configuration _) => { })
+                                         .WithModule<Setup.Logging.Module, Setup.Logging.Configuration>((Setup.Logging.Configuration _) => { }, config => new Setup.Logging.Module(config))
                                          .WithModule<DI.InMemory.Module<string>, DI.InMemory.Configuration>(config =>
                                          {
                                              config.CacheLifetime = ServiceLifetime.Scoped;
                                              config.RegistrationKey = registrationKey;
-                                         })
+                                         }, config => new DI.InMemory.Module<string>(config))
                                          .BuildServiceProvider();
 
             Assert.True(result.IsSuccess);
