@@ -3,7 +3,7 @@
     /// <summary>
     /// Configuration for the logging module.
     /// </summary>
-    public class Configuration : Baubit.DI.AConfiguration
+    public class Configuration : Baubit.DI.Configuration
     {
     }
 }

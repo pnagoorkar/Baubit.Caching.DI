@@ -13,7 +13,7 @@ namespace Baubit.Caching.DI.InMemory
     /// Uses <see cref="Store{TValue}"/> for both L1 and L2 data stores.
     /// </summary>
     /// <typeparam name="TValue">The type of values stored in the cache.</typeparam>
-    public class Module<TValue> : AModule<TValue, Configuration>
+    public class Module<TValue> : DI.Module<TValue, Configuration>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="Module{TValue}"/> class
