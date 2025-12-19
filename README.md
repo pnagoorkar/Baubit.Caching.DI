@@ -181,7 +181,6 @@ namespace MyApp.Caching
 using Baubit.Caching;
 using Baubit.Caching.DI;
 using Baubit.DI;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
@@ -191,8 +190,6 @@ namespace MyApp.Caching
 {
     public class RedisModule<TValue> : Module<TValue, RedisConfiguration>
     {
-        public RedisModule(IConfiguration configuration) : base(configuration) { }
-        
         public RedisModule(RedisConfiguration configuration, List<IModule> nestedModules = null) 
             : base(configuration, nestedModules) { }
 
