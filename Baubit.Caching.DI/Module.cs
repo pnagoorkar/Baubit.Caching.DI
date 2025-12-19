@@ -11,31 +11,31 @@ namespace Baubit.Caching.DI
     /// Provides a template for building ordered caches with configurable L1/L2 data stores and metadata.
     /// </summary>
     /// <typeparam name="TValue">The type of values stored in the cache.</typeparam>
-    /// <typeparam name="TConfiguration">The configuration type, must derive from <see cref="AConfiguration"/>.</typeparam>
-    public abstract class AModule<TValue, TConfiguration> : Baubit.DI.AModule<TConfiguration> where TConfiguration : AConfiguration
+    /// <typeparam name="TConfiguration">The configuration type, must derive from <see cref="Configuration"/>.</typeparam>
+    public abstract class Module<TValue, TConfiguration> : Baubit.DI.Module<TConfiguration> where TConfiguration : Configuration
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="AModule{TValue, TConfiguration}"/> class
+        /// Initializes a new instance of the <see cref="Module{TValue, TConfiguration}"/> class
         /// using an <see cref="IConfiguration"/> to bind settings.
         /// </summary>
         /// <param name="configuration">The configuration section to bind to <typeparamref name="TConfiguration"/>.</param>
-        protected AModule(IConfiguration configuration) : base(configuration)
+        protected Module(IConfiguration configuration) : base(configuration)
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="AModule{TValue, TConfiguration}"/> class
+        /// Initializes a new instance of the <see cref="Module{TValue, TConfiguration}"/> class
         /// using an explicit configuration object and optional nested modules.
         /// </summary>
         /// <param name="configuration">The configuration object.</param>
         /// <param name="nestedModules">Optional list of nested modules to load.</param>
-        protected AModule(TConfiguration configuration, List<Baubit.DI.IModule> nestedModules = null) : base(configuration, nestedModules)
+        protected Module(TConfiguration configuration, List<Baubit.DI.IModule> nestedModules = null) : base(configuration, nestedModules)
         {
         }
 
         /// <summary>
         /// Loads the <see cref="IOrderedCache{TValue}"/> into the service collection
-        /// with the configured <see cref="AConfiguration.CacheLifetime"/>.
+        /// with the configured <see cref="Configuration.CacheLifetime"/>.
         /// </summary>
         /// <param name="services">The service collection to add services to.</param>
         /// <exception cref="NotImplementedException">Thrown when an unsupported <see cref="ServiceLifetime"/> is specified.</exception>
