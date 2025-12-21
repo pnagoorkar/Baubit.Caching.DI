@@ -1,5 +1,6 @@
 ﻿using Baubit.Caching.InMemory;
 using Baubit.DI;
+using Baubit.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -61,7 +62,7 @@ namespace Baubit.Caching.DI.InMemory
         /// <returns>A new <see cref="Metadata"/> instance.</returns>
         protected override IMetadata BuildMetadata(IServiceProvider serviceProvider)
         {
-            return new Metadata();
+            return new Metadata(Configuration.CacheConfiguration, IdentityGenerator.CreateNew(), serviceProvider.GetRequiredService<ILoggerFactory>());
         }
     }
 }
