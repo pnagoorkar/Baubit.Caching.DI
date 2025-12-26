@@ -14,7 +14,7 @@ namespace Baubit.Caching.DI.InMemory
     /// Uses <see cref="Store{TValue}"/> for both L1 and L2 data stores.
     /// </summary>
     /// <typeparam name="TValue">The type of values stored in the cache.</typeparam>
-    public class Module<TValue> : DI.Module<TValue, Configuration>
+    public abstract class Module<TId, TValue> : DI.Module<TId, TValue, Configuration> where TId : struct, IComparable<TId>, IEquatable<TId>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="Module{TValue}"/> class
@@ -40,19 +40,21 @@ namespace Baubit.Caching.DI.InMemory
         /// </summary>
         /// <param name="serviceProvider">The service provider to resolve <see cref="ILoggerFactory"/>.</param>
         /// <returns>A bounded <see cref="Store{TValue}"/> configured with L1 capacity settings.</returns>
-        protected override IStore<TValue> BuildL1DataStore(IServiceProvider serviceProvider)
+        protected override IStore<TId, TValue> BuildL1DataStore(IServiceProvider serviceProvider)
         {
-            return new Caching.InMemory.Store<TValue>(Configuration.L1MinCap, Configuration.L1MaxCap, serviceProvider.GetRequiredService<ILoggerFactory>());
+            return new Caching.InMemory.Store<TId, TValue>(Configuration.L1MinCap, Configuration.L1MaxCap, GenerateNextId, serviceProvider.GetRequiredService<ILoggerFactory>());
         }
+
+        protected abstract TId? GenerateNextId(TId? id);
 
         /// <summary>
         /// Builds the L2 data store as an unbounded in-memory store.
         /// </summary>
         /// <param name="serviceProvider">The service provider to resolve <see cref="ILoggerFactory"/>.</param>
         /// <returns>An unbounded <see cref="Store{TValue}"/>.</returns>
-        protected override IStore<TValue> BuildL2DataStore(IServiceProvider serviceProvider)
+        protected override IStore<TId, TValue> BuildL2DataStore(IServiceProvider serviceProvider)
         {
-            return new Caching.InMemory.Store<TValue>(serviceProvider.GetRequiredService<ILoggerFactory>());
+            return new Caching.InMemory.Store<TId, TValue>(Configuration.L1MinCap, Configuration.L1MaxCap, GenerateNextId, serviceProvider.GetRequiredService<ILoggerFactory>());
         }
 
         /// <summary>
@@ -60,9 +62,9 @@ namespace Baubit.Caching.DI.InMemory
         /// </summary>
         /// <param name="serviceProvider">The service provider (unused for in-memory metadata).</param>
         /// <returns>A new <see cref="Metadata"/> instance.</returns>
-        protected override IMetadata BuildMetadata(IServiceProvider serviceProvider)
+        protected override IMetadata<TId> BuildMetadata(IServiceProvider serviceProvider)
         {
-            return new Metadata(Configuration.CacheConfiguration, IdentityGenerator.CreateNew(), serviceProvider.GetRequiredService<ILoggerFactory>());
+            return new Metadata<TId>(Configuration.CacheConfiguration, serviceProvider.GetRequiredService<ILoggerFactory>());
         }
     }
 }
