@@ -6,9 +6,9 @@ namespace ChatApp
     public class ChatClient : IHostedService
     {
         private IOrderedCache<long, ChatMessage> cache;
-        private Task<bool> listener;
-        private Task<bool> poster;
-        private CancellationTokenSource cts;
+        private Task<bool>? listener;
+        private Task<bool>? poster;
+        private CancellationTokenSource? cts;
         public ChatClient(IOrderedCache<long, ChatMessage> cache)
         {
             this.cache = cache;
@@ -18,9 +18,15 @@ namespace ChatApp
             cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             Console.WriteLine("Enter name: ");
             var userName = Console.ReadLine();
-            listener = StartListeningAsync(userName, cts.Token);
-
-            poster = Task.Run(() => RunPostingLoop(userName, cts.Token), cts.Token);
+            
+            if (string.IsNullOrWhiteSpace(userName))
+            {
+                Console.WriteLine("Name cannot be empty. Using 'Anonymous'.");
+                userName = "Anonymous";
+            }
+            
+            listener = StartListeningAsync(userName!, cts.Token);
+            poster = Task.Run(() => RunPostingLoop(userName!, cts.Token), cts.Token);
 
             return Task.CompletedTask;
         }
@@ -31,6 +37,11 @@ namespace ChatApp
             {
                 Console.WriteLine("Enter message: ");
                 var str = Console.ReadLine();
+                if (str == null)
+                {
+                    // EOF or input closed - exit gracefully
+                    break;
+                }
                 cache.Add(new ChatMessage { Message = str, UserName = currentUserName, Timestamp = DateTime.UtcNow }, out _);
             }
             return true;
@@ -43,9 +54,9 @@ namespace ChatApp
 
             while (await enumerator.MoveNextAsync())
             {
-                if (enumerator.Current.Value.UserName != currentUserName || true)
+                if (enumerator.Current.Value.UserName != currentUserName)
                 {
-                    Console.WriteLine(enumerator.Current.Value.Message);
+                    Console.WriteLine($"[{enumerator.Current.Value.UserName}]: {enumerator.Current.Value.Message}");
                 }
             }
             return true;
@@ -53,16 +64,42 @@ namespace ChatApp
 
         public async Task StopAsync(CancellationToken cancellationToken)
         {
-            cts.Cancel();
-            await listener;
-            await poster;
+            cts?.Cancel();
+            
+            if (listener != null)
+            {
+                try
+                {
+                    await listener;
+                }
+                catch (OperationCanceledException)
+                {
+                    // Expected when cancellation token is triggered
+                }
+            }
+            
+            if (poster != null)
+            {
+                try
+                {
+                    await poster;
+                }
+                catch (OperationCanceledException)
+                {
+                    // Expected when cancellation token is triggered
+                }
+            }
         }
     }
 
+    [MessagePack.MessagePackObject]
     public class ChatMessage
     {
+        [MessagePack.Key(0)]
         public string UserName { get; set; } = "";
+        [MessagePack.Key(1)]
         public string Message { get; set; } = "";
+        [MessagePack.Key(2)]
         public DateTime Timestamp { get; set; }
     }
 }
