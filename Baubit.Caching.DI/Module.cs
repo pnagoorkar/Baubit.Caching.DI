@@ -7,15 +7,16 @@ using System.Collections.Generic;
 namespace Baubit.Caching.DI
 {
     /// <summary>
-    /// Abstract base module for registering <see cref="IOrderedCache{TValue}"/> in dependency injection.
+    /// Abstract base module for registering an ordered cache in dependency injection.
     /// Provides a template for building ordered caches with configurable L1/L2 data stores and metadata.
     /// </summary>
+    /// <typeparam name="TId">The type of IDs used to identify cache entries.</typeparam>
     /// <typeparam name="TValue">The type of values stored in the cache.</typeparam>
     /// <typeparam name="TConfiguration">The configuration type, must derive from <see cref="Configuration"/>.</typeparam>
     public abstract class Module<TId, TValue, TConfiguration> : Baubit.DI.Module<TConfiguration> where TConfiguration : Configuration where TId : struct, IComparable<TId>, IEquatable<TId>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="Module{TValue, TConfiguration}"/> class
+        /// Initializes a new instance of the module class
         /// using an <see cref="IConfiguration"/> to bind settings.
         /// </summary>
         /// <param name="configuration">The configuration section to bind to <typeparamref name="TConfiguration"/>.</param>
@@ -24,7 +25,7 @@ namespace Baubit.Caching.DI
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="Module{TValue, TConfiguration}"/> class
+        /// Initializes a new instance of the module class
         /// using an explicit configuration object and optional nested modules.
         /// </summary>
         /// <param name="configuration">The configuration object.</param>
@@ -34,7 +35,7 @@ namespace Baubit.Caching.DI
         }
 
         /// <summary>
-        /// Loads the <see cref="IOrderedCache{TValue}"/> into the service collection
+        /// Loads the ordered cache into the service collection
         /// with the configured <see cref="Configuration.CacheLifetime"/>.
         /// </summary>
         /// <param name="services">The service collection to add services to.</param>
@@ -79,10 +80,10 @@ namespace Baubit.Caching.DI
         }
 
         /// <summary>
-        /// Builds the <see cref="IOrderedCache{TValue}"/> instance using the configured stores and metadata.
+        /// Builds the ordered cache instance using the configured stores and metadata.
         /// </summary>
         /// <param name="serviceProvider">The service provider to resolve dependencies.</param>
-        /// <returns>A configured <see cref="IOrderedCache{TValue}"/> instance.</returns>
+        /// <returns>A configured ordered cache instance.</returns>
         private IOrderedCache<TId, TValue> BuildOrderedCache(IServiceProvider serviceProvider)
         {
             return new OrderedCache<TId, TValue>(Configuration.CacheConfiguration,
@@ -96,21 +97,21 @@ namespace Baubit.Caching.DI
         /// Builds the L1 (fast lookup) data store when L1 caching is enabled.
         /// </summary>
         /// <param name="serviceProvider">The service provider to resolve dependencies.</param>
-        /// <returns>An <see cref="IStore{TValue}"/> for L1 caching.</returns>
+        /// <returns>A data store for L1 caching.</returns>
         protected abstract IStore<TId, TValue> BuildL1DataStore(IServiceProvider serviceProvider);
 
         /// <summary>
         /// Builds the L2 (primary) data store.
         /// </summary>
         /// <param name="serviceProvider">The service provider to resolve dependencies.</param>
-        /// <returns>An <see cref="IStore{TValue}"/> for L2 storage.</returns>
+        /// <returns>A data store for L2 storage.</returns>
         protected abstract IStore<TId, TValue> BuildL2DataStore(IServiceProvider serviceProvider);
 
         /// <summary>
         /// Builds the metadata store for tracking cache entries.
         /// </summary>
         /// <param name="serviceProvider">The service provider to resolve dependencies.</param>
-        /// <returns>An <see cref="IMetadata"/> instance.</returns>
+        /// <returns>A metadata store instance.</returns>
         protected abstract IMetadata<TId> BuildMetadata(IServiceProvider serviceProvider);
     }
 }

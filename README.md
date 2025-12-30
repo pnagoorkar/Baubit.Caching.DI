@@ -8,9 +8,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)<br/>
 [![Known Vulnerabilities](https://snyk.io/test/github/pnagoorkar/Baubit.Caching.DI/badge.svg)](https://snyk.io/test/github/pnagoorkar/Baubit.Caching.DI)
 
-Dependency injection modules for [Baubit.Caching](https://github.com/pnagoorkar/Baubit.Caching). Registers `IOrderedCache<TValue>` in your DI container with configurable L1/L2 caching and service lifetimes.
-
-> **Important:** When using configuration-based module loading with concrete (non-generic) modules, you **MUST** call `YourModuleRegistry.Register()` before `UseConfiguredServiceProviderFactory()`. See [Configuration-Based Loading](#configuration-based-loading-extended-module) for details.
+Dependency injection modules for [Baubit.Caching](https://github.com/pnagoorkar/Baubit.Caching). Registers `IOrderedCache<TId, TValue>` in your DI container with configurable L1/L2 caching and service lifetimes.
 
 ## Installation
 
@@ -22,8 +20,6 @@ dotnet add package Baubit.Caching.DI
 
 ### Programmatic Module Loading
 
-Load caching modules programmatically using `IComponent`. This is the recommended approach for generic cache modules.
-
 ```csharp
 using Baubit.Caching.DI;
 using Baubit.DI;
@@ -34,13 +30,13 @@ public class AppComponent : Component
 {
     protected override Result<ComponentBuilder> Build(ComponentBuilder builder)
     {
-        return builder.WithModule<InMemory.Module<string>, InMemory.Configuration>(config =>
+        return builder.WithModule<InMemory.Guid7.Module<string>, InMemory.Configuration>(config =>
         {
             config.IncludeL1Caching = true;
             config.L1MinCap = 128;
             config.L1MaxCap = 8192;
             config.CacheLifetime = ServiceLifetime.Singleton;
-        }, config => new InMemory.Module<string>(config));
+        }, config => new InMemory.Guid7.Module<string>(config));
     }
 }
 
@@ -50,9 +46,9 @@ await Host.CreateEmptyApplicationBuilder(new HostApplicationBuilderSettings())
           .RunAsync();
 ```
 
-### Configuration-Based Loading (Extended Module)
+### Configuration-Based Loading
 
-Since `InMemory.Module<TValue>` is generic, it **cannot** be decorated with `[BaubitModule]` directly. To load from configuration, extend it to create a concrete, non-generic module:
+Create a concrete module by extending one of the generic modules and decorating it with `[BaubitModule]`.
 
 #### Step 1: Create a Concrete Module
 
@@ -60,17 +56,12 @@ Since `InMemory.Module<TValue>` is generic, it **cannot** be decorated with `[Ba
 using Baubit.Caching.DI;
 using Baubit.DI;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using System;
 using System.Collections.Generic;
 
 namespace MyApp.Caching
 {
-    /// <summary>
-    /// Concrete string cache module that can be loaded from configuration.
-    /// </summary>
     [BaubitModule("string-cache")]
-    public class StringCacheModule : InMemory.Module<string>
+    public class StringCacheModule : InMemory.Guid7.Module<string>
     {
         public StringCacheModule(IConfiguration configuration) : base(configuration) { }
         
@@ -90,19 +81,16 @@ namespace MyApp.Caching
     [GeneratedModuleRegistry]
     internal static partial class CachingModuleRegistry
     {
-        // Register() method will be generated automatically
     }
 }
 ```
 
 #### Step 3: Register and Load
 
-> **CRITICAL:** You **MUST** call `Register()` on your module registry before any module loading operations. Forgetting this step will cause your modules to not be found and can lead to frustrating runtime errors.
-
 ```csharp
 using MyApp.Caching;
 
-// MUST be called before UseConfiguredServiceProviderFactory()
+// Register modules before loading
 CachingModuleRegistry.Register();
 
 await Host.CreateApplicationBuilder()
@@ -122,72 +110,22 @@ await Host.CreateApplicationBuilder()
         "includeL1Caching": true,
         "l1MinCap": 128,
         "l1MaxCap": 8192,
-        "cacheLifetime": "Singleton",
-        "registrationKey": "my-cache"
+        "cacheLifetime": "Singleton"
       }
     }
   ]
 }
 ```
 
-### Hybrid Loading
-
-Combine with other modules from appsettings.json:
-
-```csharp
-using MyApp.Caching;
-
-// MUST call Register() first
-CachingModuleRegistry.Register();
-
-await Host.CreateApplicationBuilder()
-          .UseConfiguredServiceProviderFactory(componentsFactory: () => [new AppComponent()])
-          .Build()
-          .RunAsync();
-```
-
-## Keyed Service Registration
-
-Register multiple cache instances with different keys for different use cases.
-
-```csharp
-using Baubit.Caching.DI;
-using Baubit.DI;
-using Microsoft.Extensions.DependencyInjection;
-
-public class AppComponent : Component
-{
-    protected override Result<ComponentBuilder> Build(ComponentBuilder builder)
-    {
-        return builder.WithModule<InMemory.Module<string>, InMemory.Configuration>(config =>
-                      {
-                          config.RegistrationKey = "user-cache";
-                          config.CacheLifetime = ServiceLifetime.Singleton;
-                      }, config => new InMemory.Module<string>(config))
-                      .WithModule<InMemory.Module<string>, InMemory.Configuration>(config =>
-                      {
-                          config.RegistrationKey = "product-cache";
-                          config.CacheLifetime = ServiceLifetime.Singleton;
-                      }, config => new InMemory.Module<string>(config));
-    }
-}
-
-// Resolve keyed services
-var userCache = serviceProvider.GetKeyedService<IOrderedCache<string>>("user-cache");
-var productCache = serviceProvider.GetKeyedService<IOrderedCache<string>>("product-cache");
-```
-
 ## Features
 
-- **L1/L2 Caching**: Optional bounded L1 (fast lookup) layer with unbounded L2 storage
+- **L1/L2 Caching**: Optional bounded L1 layer with unbounded L2 storage
 - **Configurable Lifetimes**: Singleton, Transient, or Scoped registration
 - **Keyed Service Registration**: Register multiple cache instances with unique keys
 - **Type-Safe Configuration**: Strongly-typed configuration via `IComponent`
-- **Flexible Storage**: Implement custom storage backends by extending `Module<TValue, TConfiguration>`
+- **Sequential ID Generation**: Long and GUID v7 ID generators included
 
 ## Configuration
-
-Configuration properties for caching modules:
 
 | Property | Type | Default | Description |
 |----------|------|---------|-------------|
@@ -195,78 +133,51 @@ Configuration properties for caching modules:
 | `L1MinCap` | `int` | `128` | Minimum capacity for L1 store |
 | `L1MaxCap` | `int` | `8192` | Maximum capacity for L1 store |
 | `CacheConfiguration` | `Baubit.Caching.Configuration` | `null` | Underlying cache configuration |
-| `CacheLifetime` | `ServiceLifetime` | `Singleton` | DI service lifetime (Singleton, Scoped, or Transient) |
-| `RegistrationKey` | `string` | `null` | Key for keyed service registration. When null, registered as non-keyed service |
+| `CacheLifetime` | `ServiceLifetime` | `Singleton` | DI service lifetime |
+| `RegistrationKey` | `string` | `null` | Key for keyed service registration |
 
 ## Available Modules
 
-### `InMemory.Module<TValue>`
+### `InMemory.Long.Module<TValue>`
 
-Concrete module using in-memory stores for both L1 and L2 caching layers.
+In-memory cache module with sequential `long` ID generation starting from 1.
 
-**Configuration:** Uses `InMemory.Configuration` which extends the base `Configuration` class.
+### `InMemory.Guid7.Module<TValue>`
 
-**Storage:**
-- **L1**: Bounded `Store<TValue>` with configurable capacity (`L1MinCap` to `L1MaxCap`)
-- **L2**: Unbounded `Store<TValue>`
-- **Metadata**: In-memory `Metadata` store
+In-memory cache module with monotonically increasing GUID v7 ID generation.
 
-**Example:**
+## Keyed Service Registration
+
+Register multiple cache instances with different keys:
+
 ```csharp
-builder.WithModule<InMemory.Module<string>, InMemory.Configuration>(config =>
+public class AppComponent : Component
 {
-    config.IncludeL1Caching = true;
-    config.L1MinCap = 128;
-    config.L1MaxCap = 8192;
-    config.CacheLifetime = ServiceLifetime.Singleton;
-}, config => new InMemory.Module<string>(config));
+    protected override Result<ComponentBuilder> Build(ComponentBuilder builder)
+    {
+        return builder.WithModule<InMemory.Guid7.Module<string>, InMemory.Configuration>(config =>
+                      {
+                          config.RegistrationKey = "user-cache";
+                          config.CacheLifetime = ServiceLifetime.Singleton;
+                      }, config => new InMemory.Guid7.Module<string>(config))
+                      .WithModule<InMemory.Guid7.Module<string>, InMemory.Configuration>(config =>
+                      {
+                          config.RegistrationKey = "product-cache";
+                          config.CacheLifetime = ServiceLifetime.Singleton;
+                      }, config => new InMemory.Guid7.Module<string>(config));
+    }
+}
+
+// Resolve keyed services
+var userCache = serviceProvider.GetKeyedService<IOrderedCache<Guid, string>>("user-cache");
+var productCache = serviceProvider.GetKeyedService<IOrderedCache<Guid, string>>("product-cache");
 ```
-
-## API Reference
-
-### `Configuration`
-
-Abstract base configuration class for caching modules. Provides common configuration properties for L1/L2 caching and service lifetime.
-
-### `Module<TValue, TConfiguration>`
-
-Abstract base module for registering `IOrderedCache<TValue>`. 
-
-**Type Parameters:**
-- `TValue`: The type of values stored in the cache
-- `TConfiguration`: Configuration type, must derive from `Configuration`
-
-**Abstract Methods:**
-- `BuildL1DataStore(IServiceProvider)`: Build the L1 (fast lookup) data store
-- `BuildL2DataStore(IServiceProvider)`: Build the L2 (primary) data store
-- `BuildMetadata(IServiceProvider)`: Build the metadata store for cache entry tracking
-
-**Usage:** Extend this class to create custom cache modules with different storage backends.
 
 ## Creating Custom Modules
 
-You can create custom cache modules with different storage backends. Modules can be generic (for programmatic loading) or concrete (for configuration-based loading).
+Extend `Module<TId, TValue, TConfiguration>` to create custom cache modules with different storage backends.
 
-### Option 1: Generic Module (Programmatic Loading Only)
-
-Generic modules provide flexibility but can only be loaded programmatically.
-
-#### 1. Define Configuration
-
-```csharp
-using Baubit.Caching.DI;
-
-namespace MyApp.Caching
-{
-    public class RedisConfiguration : Configuration
-    {
-        public string ConnectionString { get; set; }
-        public int DatabaseNumber { get; set; } = 0;
-    }
-}
-```
-
-#### 2. Implement Generic Module
+### Example: Custom Module
 
 ```csharp
 using Baubit.Caching;
@@ -279,153 +190,36 @@ using System.Collections.Generic;
 
 namespace MyApp.Caching
 {
-    public class RedisModule<TValue> : Module<TValue, RedisConfiguration>
+    public class RedisConfiguration : Configuration
     {
-        public RedisModule(RedisConfiguration configuration, List<IModule> nestedModules = null) 
+        public string ConnectionString { get; set; }
+        public int DatabaseNumber { get; set; } = 0;
+    }
+
+    public abstract class RedisModule<TId, TValue> : Module<TId, TValue, RedisConfiguration> 
+        where TId : struct, IComparable<TId>, IEquatable<TId>
+    {
+        protected RedisModule(RedisConfiguration configuration, List<IModule> nestedModules = null) 
             : base(configuration, nestedModules) { }
 
-        protected override IStore<TValue> BuildL1DataStore(IServiceProvider serviceProvider)
+        protected override IStore<TId, TValue> BuildL1DataStore(IServiceProvider serviceProvider)
         {
-            var loggerFactory = serviceProvider.GetRequiredService<ILoggerFactory>();
-            return new RedisStore<TValue>(
-                Configuration.ConnectionString, 
-                Configuration.DatabaseNumber,
-                Configuration.L1MinCap,
-                Configuration.L1MaxCap,
-                loggerFactory);
+            // Implement Redis-backed L1 store
+            throw new NotImplementedException();
         }
 
-        protected override IStore<TValue> BuildL2DataStore(IServiceProvider serviceProvider)
+        protected override IStore<TId, TValue> BuildL2DataStore(IServiceProvider serviceProvider)
         {
-            var loggerFactory = serviceProvider.GetRequiredService<ILoggerFactory>();
-            return new RedisStore<TValue>(
-                Configuration.ConnectionString,
-                Configuration.DatabaseNumber,
-                loggerFactory);
+            // Implement Redis-backed L2 store
+            throw new NotImplementedException();
         }
 
-        protected override IMetadata BuildMetadata(IServiceProvider serviceProvider)
+        protected override IMetadata<TId> BuildMetadata(IServiceProvider serviceProvider)
         {
-            return new RedisMetadata(
-                Configuration.ConnectionString,
-                Configuration.DatabaseNumber);
+            // Implement Redis-backed metadata store
+            throw new NotImplementedException();
         }
     }
-}
-```
-
-#### 3. Use Programmatically
-
-```csharp
-using MyApp.Caching;
-using Baubit.DI;
-using Microsoft.Extensions.DependencyInjection;
-
-public class AppComponent : Component
-{
-    protected override Result<ComponentBuilder> Build(ComponentBuilder builder)
-    {
-        return builder.WithModule<RedisModule<string>, RedisConfiguration>(config =>
-        {
-            config.ConnectionString = "localhost:6379";
-            config.DatabaseNumber = 0;
-            config.IncludeL1Caching = true;
-            config.CacheLifetime = ServiceLifetime.Singleton;
-        }, config => new RedisModule<string>(config));
-    }
-}
-```
-
-### Option 2: Concrete Module (Configuration-Based Loading)
-
-To enable configuration-based loading, create a concrete (non-generic) module by extending a generic module.
-
-#### 1. Create Concrete Module
-
-```csharp
-using Baubit.Caching.DI;
-using Baubit.DI;
-using Microsoft.Extensions.Configuration;
-using System.Collections.Generic;
-
-namespace MyApp.Caching
-{
-    /// <summary>
-    /// Concrete Redis cache module for string values.
-    /// Can be loaded from appsettings.json using the "redis-string-cache" key.
-    /// </summary>
-    [BaubitModule("redis-string-cache")]
-    public class RedisStringCacheModule : RedisModule<string>
-    {
-        // Constructor for configuration-based loading
-        public RedisStringCacheModule(IConfiguration configuration) 
-            : base(BindConfiguration(configuration)) { }
-        
-        // Constructor for programmatic loading
-        public RedisStringCacheModule(RedisConfiguration configuration, List<IModule> nestedModules = null) 
-            : base(configuration, nestedModules) { }
-        
-        private static RedisConfiguration BindConfiguration(IConfiguration configuration)
-        {
-            var config = new RedisConfiguration();
-            configuration.Bind(config);
-            return config;
-        }
-    }
-}
-```
-
-#### 2. Create Module Registry
-
-```csharp
-using Baubit.DI;
-
-namespace MyApp.Caching
-{
-    /// <summary>
-    /// Module registry for MyApp caching modules.
-    /// MUST call Register() before UseConfiguredServiceProviderFactory().
-    /// </summary>
-    [GeneratedModuleRegistry]
-    internal static partial class CachingModuleRegistry
-    {
-        // Register() method will be generated automatically
-    }
-}
-```
-
-#### 3. Register and Use
-
-> **CRITICAL:** You **MUST** call `CachingModuleRegistry.Register()` before module loading. This registers your modules with Baubit.DI's module registry. Forgetting this step will cause your modules to not be found.
-
-```csharp
-using MyApp.Caching;
-
-// REQUIRED: Register modules before loading
-CachingModuleRegistry.Register();
-
-await Host.CreateApplicationBuilder()
-          .UseConfiguredServiceProviderFactory()
-          .Build()
-          .RunAsync();
-```
-
-**appsettings.json:**
-```json
-{
-  "modules": [
-    {
-      "key": "redis-string-cache",
-      "configuration": {
-        "connectionString": "localhost:6379",
-        "databaseNumber": 0,
-        "includeL1Caching": true,
-        "l1MinCap": 128,
-        "l1MaxCap": 8192,
-        "cacheLifetime": "Singleton"
-      }
-    }
-  ]
 }
 ```
 
