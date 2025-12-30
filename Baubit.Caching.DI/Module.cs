@@ -84,7 +84,7 @@ namespace Baubit.Caching.DI
         /// </summary>
         /// <param name="serviceProvider">The service provider to resolve dependencies.</param>
         /// <returns>A configured ordered cache instance.</returns>
-        private IOrderedCache<TId, TValue> BuildOrderedCache(IServiceProvider serviceProvider)
+        protected virtual IOrderedCache<TId, TValue> BuildOrderedCache(IServiceProvider serviceProvider)
         {
             return new OrderedCache<TId, TValue>(Configuration.CacheConfiguration,
                                             Configuration.IncludeL1Caching ? BuildL1DataStore(serviceProvider) : null,
