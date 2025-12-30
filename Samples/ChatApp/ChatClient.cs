@@ -25,8 +25,9 @@ namespace ChatApp
                 userName = "Anonymous";
             }
             
-            listener = StartListeningAsync(userName!, cts.Token);
-            poster = Task.Run(() => RunPostingLoop(userName!, cts.Token), cts.Token);
+            // userName is guaranteed to be non-null here
+            listener = StartListeningAsync(userName, cts.Token);
+            poster = Task.Run(() => RunPostingLoop(userName, cts.Token), cts.Token);
 
             return Task.CompletedTask;
         }
