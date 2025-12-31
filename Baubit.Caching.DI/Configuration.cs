@@ -35,14 +35,14 @@ namespace Baubit.Caching.DI
         public Baubit.Caching.Configuration CacheConfiguration { get; set; }
 
         /// <summary>
-        /// Gets or sets the service lifetime for the registered <see cref="IOrderedCache{TValue}"/>.
+        /// Gets or sets the service lifetime for the registered cache.
         /// Defaults to <see cref="ServiceLifetime.Singleton"/>.
         /// </summary>
         public ServiceLifetime CacheLifetime { get; set; } = ServiceLifetime.Singleton;
 
         /// <summary>
         /// Gets or sets the registration key for keyed service registration.
-        /// When set, the <see cref="IOrderedCache{TValue}"/> is registered as a keyed service.
+        /// When set, the cache is registered as a keyed service.
         /// When <c>null</c> or empty, the cache is registered as a non-keyed service.
         /// Defaults to <c>null</c>.
         /// </summary>
