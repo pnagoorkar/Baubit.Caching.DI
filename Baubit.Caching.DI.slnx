@@ -1,4 +1,10 @@
 <Solution>
+  <Folder Name="/Samples/">
+    <File Path="Samples/README.md" />
+    <Project Path="Samples/ChatApp/ChatApp.csproj" Id="d2556937-e39f-4ae4-bab9-0ec3431aa1a7" />
+    <Project Path="Samples/gRPC/gRPC.csproj" Id="8ea10eed-65c4-4c33-8fb0-7f1ff1673342" />
+    <Project Path="Samples/ServerApp/ServerApp.csproj" Id="f5908aa6-aea6-4dc6-9b8a-c54d9f48c622" />
+  </Folder>
   <Folder Name="/SolutionItems/">
     <File Path=".circleci/config.yml" />
     <File Path=".github/copilot-instructions.md" />
