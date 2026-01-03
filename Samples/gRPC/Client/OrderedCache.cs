@@ -422,7 +422,15 @@ namespace gRPC.Client
         {
             if (handler == null) throw new ArgumentNullException(nameof(handler));
 
-            var entry = await GetNextAsync(null, cancellationToken).ConfigureAwait(false);
+            // Get the last ID in the cache to wait for the next item after it
+            TId? lastId = null;
+            if (GetLastIdOrDefault(out var id))
+            {
+                lastId = id;
+            }
+
+            // Wait for the next item after the last known ID
+            var entry = await GetNextAsync(lastId, cancellationToken).ConfigureAwait(false);
             if (entry == null) return false;
 
             if (entry.Value is T typedValue)

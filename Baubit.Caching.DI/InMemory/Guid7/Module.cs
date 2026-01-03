@@ -38,9 +38,10 @@ namespace Baubit.Caching.DI.InMemory.Guid7
         /// Generates the next GUID v7 in monotonically increasing sequence.
         /// </summary>
         /// <param name="lastGeneratedId">The last generated GUID, used to ensure monotonicity.</param>
-        /// <returns>The next GUID v7 in sequence.</returns>
+        /// <returns>The next GUID v7 in sequence, or <c>null</c> if generation fails.</returns>
         protected override Guid? GenerateNextId(Guid? lastGeneratedId)
         {
+            if (identityGenerator == null) return null;
             // Initialize from last generated ID if available to ensure monotonicity
             if (lastGeneratedId.HasValue)
             {
