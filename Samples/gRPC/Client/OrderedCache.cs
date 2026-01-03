@@ -420,25 +420,11 @@ namespace gRPC.Client
         /// <inheritdoc />
         public async Task<bool> OnNextAsync<T>(Func<(TId, T), object, CancellationToken, Task<bool>> handler, object state = null, CancellationToken cancellationToken = default) where T : TValue
         {
-            if (handler == null) throw new ArgumentNullException(nameof(handler));
-
-            // Get the last ID in the cache to wait for the next item after it
-            TId? lastId = null;
-            if (GetLastIdOrDefault(out var id))
+            await foreach (var tuple in EnumerateFutureAsync<T>(cancellationToken))
             {
-                lastId = id;
+                await handler?.Invoke(tuple, state, cancellationToken);
             }
-
-            // Wait for the next item after the last known ID
-            var entry = await GetNextAsync(lastId, cancellationToken).ConfigureAwait(false);
-            if (entry == null) return false;
-
-            if (entry.Value is T typedValue)
-            {
-                return await handler((entry.Id, typedValue), state, cancellationToken).ConfigureAwait(false);
-            }
-
-            return false;
+            return true;
         }
     }
 }
