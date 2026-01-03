@@ -382,6 +382,56 @@ namespace gRPC.Client
                 return false;
             }
         }
+
+        /// <inheritdoc />
+        public async IAsyncEnumerable<(TId, T)> EnumerateAsync<T>([System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default) where T : TValue
+        {
+            var enumerator = GetAsyncEnumerator(cancellationToken);
+            await using (enumerator.ConfigureAwait(false))
+            {
+                while (await enumerator.MoveNextAsync().ConfigureAwait(false))
+                {
+                    var entry = enumerator.Current;
+                    if (entry.Value is T typedValue)
+                    {
+                        yield return (entry.Id, typedValue);
+                    }
+                }
+            }
+        }
+
+        /// <inheritdoc />
+        public async IAsyncEnumerable<(TId, T)> EnumerateFutureAsync<T>([System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default) where T : TValue
+        {
+            var enumerator = GetFutureAsyncEnumerator(cancellationToken);
+            await using (enumerator.ConfigureAwait(false))
+            {
+                while (await enumerator.MoveNextAsync().ConfigureAwait(false))
+                {
+                    var entry = enumerator.Current;
+                    if (entry.Value is T typedValue)
+                    {
+                        yield return (entry.Id, typedValue);
+                    }
+                }
+            }
+        }
+
+        /// <inheritdoc />
+        public async Task<bool> OnNextAsync<T>(Func<(TId, T), object, CancellationToken, Task<bool>> handler, object state = null, CancellationToken cancellationToken = default) where T : TValue
+        {
+            if (handler == null) throw new ArgumentNullException(nameof(handler));
+
+            var entry = await GetNextAsync(null, cancellationToken).ConfigureAwait(false);
+            if (entry == null) return false;
+
+            if (entry.Value is T typedValue)
+            {
+                return await handler((entry.Id, typedValue), state, cancellationToken).ConfigureAwait(false);
+            }
+
+            return false;
+        }
     }
 }
 
