@@ -37,7 +37,11 @@ namespace Baubit.Caching.DI.InMemory.Long
         /// <returns>The next ID in sequence (starting from 1).</returns>
         protected override long? GenerateNextId(long? id)
         {
-            return id == null ? 1 : id + 1;
+            if (id == null)
+            {
+                return 1;
+            }
+            return id + 1;
         }
     }
 }
