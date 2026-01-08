@@ -190,9 +190,14 @@ namespace gRPC.Client
         }
 
         /// <inheritdoc />
-        public IAsyncEnumerator<IEntry<TId, TValue>> GetFutureAsyncEnumerator(CancellationToken cancellationToken = default)
+        public IAsyncEnumerator<IEntry<TId, TValue>> GetFutureAsyncEnumerator(string id = null, CancellationToken cancellationToken = default)
         {
-            return new GrpcAsyncEnumerator<TId, TValue>(_client.EnumerateFuture(new EmptyRequest(), cancellationToken: cancellationToken),
+            var request = new EnumerateFutureRequest();
+            if (!string.IsNullOrEmpty(id))
+            {
+                request.Id = id;
+            }
+            return new GrpcAsyncEnumerator<TId, TValue>(_client.EnumerateFuture(request, cancellationToken: cancellationToken),
                                                         _serializer,
                                                         cancellationToken);
         }
@@ -403,7 +408,7 @@ namespace gRPC.Client
         /// <inheritdoc />
         public async IAsyncEnumerable<(TId, T)> EnumerateFutureAsync<T>([System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default) where T : TValue
         {
-            var enumerator = GetFutureAsyncEnumerator(cancellationToken);
+            var enumerator = GetFutureAsyncEnumerator(null, cancellationToken);
             await using (enumerator.ConfigureAwait(false))
             {
                 while (await enumerator.MoveNextAsync().ConfigureAwait(false))
