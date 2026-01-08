@@ -90,7 +90,9 @@ namespace Baubit.Caching.DI
                                             Configuration.IncludeL1Caching ? BuildL1DataStore(serviceProvider) : null,
                                             BuildL2DataStore(serviceProvider),
                                             BuildMetadata(serviceProvider),
-                                            serviceProvider.GetRequiredService<ILoggerFactory>());
+                                            serviceProvider.GetRequiredService<ILoggerFactory>(),
+                                            () => new CacheEnumeratorCollection<TId>(),
+                                            new CacheAsyncEnumeratorFactory<TId, TValue>());
         }
 
         /// <summary>

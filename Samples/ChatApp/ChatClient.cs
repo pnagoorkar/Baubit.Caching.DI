@@ -120,7 +120,7 @@ namespace ChatApp
         private async Task<bool> StartListeningAsync(string currentUserName, 
                                                      CancellationToken cancellationToken)
         {
-            var enumerator = cache.GetFutureAsyncEnumerator(cancellationToken);
+            var enumerator = cache.GetFutureAsyncEnumerator(null, cancellationToken);
 
             while (await enumerator.MoveNextAsync())
             {
