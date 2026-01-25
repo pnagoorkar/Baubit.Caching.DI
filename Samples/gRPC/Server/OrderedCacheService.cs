@@ -279,9 +279,10 @@ namespace gRPC.Server
             }
         }
 
-        public override async Task EnumerateFuture(EmptyRequest request, IServerStreamWriter<EntryResponse> responseStream, ServerCallContext context)
+        public override async Task EnumerateFuture(EnumerateFutureRequest request, IServerStreamWriter<EntryResponse> responseStream, ServerCallContext context)
         {
-            var enumerator = _cache.GetFutureAsyncEnumerator(context.CancellationToken);
+            string id = request.HasId ? request.Id : null;
+            var enumerator = _cache.GetFutureAsyncEnumerator(id, context.CancellationToken);
             try
             {
                 while (await enumerator.MoveNextAsync())

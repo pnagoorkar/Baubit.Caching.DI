@@ -49,11 +49,15 @@ service OrderedCacheService {
   rpc Enumerate (EmptyRequest) returns (stream EntryResponse);
   
   // Enumerate future entries as they are added (server streaming)
-  rpc EnumerateFuture (EmptyRequest) returns (stream EntryResponse);
+  rpc EnumerateFuture (EnumerateFutureRequest) returns (stream EntryResponse);
 }
 
 // Request messages
 message EmptyRequest {}
+
+message EnumerateFutureRequest {
+  optional string id = 1;  // Optional enumerator ID for tracking
+}
 
 message AddRequest {
   bytes value = 1;  // MessagePack serialized TValue

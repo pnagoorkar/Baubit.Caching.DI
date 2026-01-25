@@ -120,7 +120,7 @@ namespace ChatApp
         private async Task<bool> StartListeningAsync(string currentUserName, 
                                                      CancellationToken cancellationToken)
         {
-            var enumerator = cache.GetFutureAsyncEnumerator(cancellationToken);
+            var enumerator = cache.GetFutureAsyncEnumerator(null, cancellationToken);
 
             while (await enumerator.MoveNextAsync())
             {
@@ -174,25 +174,21 @@ namespace ChatApp
     /// Represents a chat message with sender information and timestamp.
     /// Messages are serialized using MessagePack for efficient gRPC transport.
     /// </summary>
-    [MessagePack.MessagePackObject]
     public class ChatMessage
     {
         /// <summary>
         /// Gets or sets the name of the user who sent the message.
         /// </summary>
-        [MessagePack.Key(0)]
         public string UserName { get; set; } = "";
 
         /// <summary>
         /// Gets or sets the message content.
         /// </summary>
-        [MessagePack.Key(1)]
         public string Message { get; set; } = "";
 
         /// <summary>
         /// Gets or sets the UTC timestamp when the message was created.
         /// </summary>
-        [MessagePack.Key(2)]
         public DateTime Timestamp { get; set; }
     }
 }

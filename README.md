@@ -229,7 +229,22 @@ var productCache = serviceProvider.GetKeyedService<IOrderedCache<Guid, string>>(
 
 ## Creating Custom Modules
 
-Extend `Module<TId, TValue, TConfiguration>` to create custom cache modules with different storage backends.
+Extend `Module<TId, TValue, TConfiguration>` to create custom cache modules with different storage backends or ID generation strategies.
+
+### Required Overrides
+
+When creating a custom module, you must implement three abstract methods:
+
+- **`BuildL1DataStore(IServiceProvider)`**: Creates the L1 (bounded) cache store
+- **`BuildL2DataStore(IServiceProvider)`**: Creates the L2 (unbounded) cache store
+- **`BuildMetadata(IServiceProvider)`**: Creates the metadata store for cache statistics
+
+### Optional Overrides
+
+Two virtual methods are available for advanced customization:
+
+- **`BuildCacheEnumeratorCollectionFactory(IServiceProvider)`**: Customize how enumerator collections are created (default: `() => new CacheEnumeratorCollection<TId>()`)
+- **`BuildCacheEnumeratorFactory(IServiceProvider)`**: Customize the async enumerator factory (default: `new CacheAsyncEnumeratorFactory<TId, TValue>()`)
 
 ### Example: Custom Module
 
@@ -272,6 +287,20 @@ namespace MyApp.Caching
         {
             // Implement Redis-backed metadata store
             throw new NotImplementedException();
+        }
+
+        // Optional: Override to customize cache enumerator collection factory
+        protected override Func<CacheEnumeratorCollection<TId>> BuildCacheEnumeratorCollectionFactory(IServiceProvider serviceProvider)
+        {
+            // Default implementation returns () => new CacheEnumeratorCollection<TId>()
+            return base.BuildCacheEnumeratorCollectionFactory(serviceProvider);
+        }
+
+        // Optional: Override to customize cache async enumerator factory
+        protected override ICacheAsyncEnumeratorFactory<TId, TValue> BuildCacheEnumeratorFactory(IServiceProvider serviceProvider)
+        {
+            // Default implementation returns new CacheAsyncEnumeratorFactory<TId, TValue>()
+            return base.BuildCacheEnumeratorFactory(serviceProvider);
         }
     }
 }

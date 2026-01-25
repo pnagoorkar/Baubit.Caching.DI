@@ -90,7 +90,9 @@ namespace Baubit.Caching.DI
                                             Configuration.IncludeL1Caching ? BuildL1DataStore(serviceProvider) : null,
                                             BuildL2DataStore(serviceProvider),
                                             BuildMetadata(serviceProvider),
-                                            serviceProvider.GetRequiredService<ILoggerFactory>());
+                                            serviceProvider.GetRequiredService<ILoggerFactory>(), 
+                                            BuildCacheEnumeratorCollectionFactory(serviceProvider), 
+                                            BuildCacheEnumeratorFactory(serviceProvider));
         }
 
         /// <summary>
@@ -113,5 +115,25 @@ namespace Baubit.Caching.DI
         /// <param name="serviceProvider">The service provider to resolve dependencies.</param>
         /// <returns>A metadata store instance.</returns>
         protected abstract IMetadata<TId> BuildMetadata(IServiceProvider serviceProvider);
+
+        /// <summary>
+        /// Builds a factory for creating cache enumerator collections.
+        /// </summary>
+        /// <param name="serviceProvider">The service provider to resolve dependencies.</param>
+        /// <returns>A factory function that creates <see cref="CacheEnumeratorCollection{TId}"/> instances.</returns>
+        protected virtual Func<CacheEnumeratorCollection<TId>> BuildCacheEnumeratorCollectionFactory(IServiceProvider serviceProvider)
+        {
+            return () => new CacheEnumeratorCollection<TId>();
+        }
+
+        /// <summary>
+        /// Builds a factory for creating cache async enumerators.
+        /// </summary>
+        /// <param name="serviceProvider">The service provider to resolve dependencies.</param>
+        /// <returns>A cache async enumerator factory instance.</returns>
+        protected virtual ICacheAsyncEnumeratorFactory<TId, TValue> BuildCacheEnumeratorFactory(IServiceProvider serviceProvider)
+        {
+            return new CacheAsyncEnumeratorFactory<TId, TValue>();
+        }
     }
 }
