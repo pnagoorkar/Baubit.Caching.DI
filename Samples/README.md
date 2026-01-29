@@ -4,15 +4,43 @@ Real-time distributed chat application demonstrating Baubit.Caching with gRPC tr
 
 ## Architecture
 
-```
-┌─────────────┐      gRPC/HTTP2      ┌─────────────┐      gRPC/HTTP2      ┌─────────────┐
-│  ChatApp    │◄────────────────────►│  ServerApp  │◄────────────────────►│  ChatApp    │
-│  (Client 1) │                      │   (Server)  │                      │  (Client 2) │
-└─────────────┘                      └─────────────┘                      └─────────────┘
-       │                                     │                                     │
-       │                                     │                                     │
-       └─────────────────────────────────────┴─────────────────────────────────────┘
-                      Synchronized via IOrderedCache<long, ChatMessage>
+```mermaid
+graph TB
+    %% --- Server on top ---
+    Server["ServerApp<br/>(Server)"]
+
+    %% --- Clients row ---
+    subgraph Clients[" "]
+        direction LR
+
+        Client1["ChatApp<br/>(Client 1)"]
+        Client2["ChatApp<br/>(Client 2)"]
+
+        Dots["⋯"]
+
+        ClientN["ChatApp<br/>(Client N)"]
+    end
+
+    %% --- Connections ---
+    Server <-->|gRPC / HTTP2| Client1
+    Server <-->|gRPC / HTTP2| Client2
+    Server <-->|gRPC / HTTP2| ClientN
+
+    %% --- Centered note below clients ---
+    Note["All clients<br/>synchronize via<br/>IOrderedCache&lt;long, ChatMessage&gt;"]
+    Clients --- Note
+
+    %% --- Styling ---
+    style Client1 fill:#e3f2fd,stroke:#1976d2,stroke-width:2px
+    style Client2 fill:#e3f2fd,stroke:#1976d2,stroke-width:2px
+    style ClientN fill:#e3f2fd,stroke:#1976d2,stroke-width:2px
+
+    style Server fill:#fff3e0,stroke:#f57c00,stroke-width:2px
+
+    style Note fill:#f5f5f5,stroke:#9e9e9e,stroke-dasharray:5 5
+
+    %% --- Make dots unobtrusive ---
+    style Dots fill:transparent,stroke:transparent,color:#666
 ```
 
 **Components:**
