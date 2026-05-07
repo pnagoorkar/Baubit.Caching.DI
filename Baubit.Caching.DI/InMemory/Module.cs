@@ -1,6 +1,5 @@
 ﻿using Baubit.Caching.InMemory;
 using Baubit.DI;
-using Baubit.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -60,7 +59,8 @@ namespace Baubit.Caching.DI.InMemory
         /// <returns>An unbounded in-memory store.</returns>
         protected override IStore<TId, TValue> BuildL2DataStore(IServiceProvider serviceProvider)
         {
-            return new Caching.InMemory.Store<TId, TValue>(Configuration.L1MinCap, Configuration.L1MaxCap, GenerateNextId, serviceProvider.GetRequiredService<ILoggerFactory>());
+            // L2 stores are unbounded by design so null, null for minCap and maxCap parameters
+            return new Caching.InMemory.Store<TId, TValue>(null, null, GenerateNextId, serviceProvider.GetRequiredService<ILoggerFactory>());
         }
 
         /// <summary>
